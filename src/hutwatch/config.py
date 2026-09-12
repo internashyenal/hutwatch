@@ -138,11 +138,11 @@ def load_config(config_path: str | Path = "config.toml", env_path: str | Path | 
 
     enabled = list(raw["notifiers"]["enabled"])
     ntfy_cfg = None
-    if "ntfy" in raw["notifiers"]:
+    if "ntfy" in enabled and "ntfy" in raw["notifiers"]:
         n = raw["notifiers"]["ntfy"]
         ntfy_cfg = NtfyConfig(topic=_env(n["topic_env"]), server=n["server"])
     smtp_cfg = None
-    if "smtp" in raw["notifiers"]:
+    if "smtp" in enabled and "smtp" in raw["notifiers"]:
         s = raw["notifiers"]["smtp"]
         smtp_cfg = SmtpConfig(
             host=_env(s["host_env"], ""),
