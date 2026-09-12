@@ -9,9 +9,23 @@ from __future__ import annotations
 import html
 from datetime import date as _date
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from hutwatch.config import Config, TargetConfig
 from hutwatch.state import StateStore
+
+_MELBOURNE_TZ = ZoneInfo("Australia/Melbourne")
+
+
+def _to_melbourne(timestamp: str) -> str:
+    """Formats a stored UTC ISO timestamp string as local Melbourne time."""
+    try:
+        dt = datetime.fromisoformat(timestamp)
+    except ValueError:
+        return timestamp
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(_MELBOURNE_TZ).strftime("%Y-%m-%d %H:%M %Z")
 
 _STYLE = """
 body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
@@ -50,7 +64,7 @@ def _history_rows(state: StateStore, target: TargetConfig, limit: int) -> str:
     for r in records:
         rows.append(
             "<tr>"
-            f"<td>{html.escape(r.timestamp)}</td>"
+            f"<td>{html.escape(_to_melbourne(r.timestamp))}</td>"
             f"<td>{_badge(r.beds, r.error)}</td>"
             f"<td>{html.escape(r.room_type or '-')}</td>"
             f"<td>{r.http_status if r.http_status is not None else '-'}</td>"
@@ -70,7 +84,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
         latest = state.recent_checks(limit=1, label=target.label)
         last = latest[0] if latest else None
         badge = _badge(last.beds, last.error) if last else '<span class="badge none">no data yet</span>'
-        last_checked = html.escape(last.timestamp) if last else "-"
+        last_checked = html.escape(_to_melbourne(last.timestamp)) if last else "-"
 
         summary_rows.append(
             "<tr>"
@@ -88,7 +102,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
             f"""<details>
 <summary>{html.escape(target.label)} &mdash; recent checks</summary>
 <table>
-<thead><tr><th>Timestamp (UTC)</th><th>Result</th><th>Room type</th><th>HTTP</th><th>Error</th></tr></thead>
+<thead><tr><th>Timestamp (Melbourne)</th><th>Result</th><th>Room type</th><th>HTTP</th><th>Error</th></tr></thead>
 <tbody>
 {_history_rows(state, target, limit)}
 </tbody>
@@ -121,7 +135,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
   <th>Nights</th>
   <th>Beds needed</th>
   <th>Latest result</th>
-  <th>Last checked (UTC)</th>
+  <th>Last checked (Melbourne)</th>
   <th>Consec. failures</th>
 </tr>
 </thead>
