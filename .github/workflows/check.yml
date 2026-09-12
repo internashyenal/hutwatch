@@ -4,6 +4,7 @@ name: hutwatch check
 # check on a schedule instead of a long-lived process. State (SQLite db) is
 # cached between runs so the alert-transition logic (no duplicate alerts)
 # still works across these ephemeral runs.
+# no-op metadata update to force workflow re-indexing
 
 on:
   schedule:
