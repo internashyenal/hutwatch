@@ -1,0 +1,74 @@
+# hutwatch configuration
+# Secrets (API keys, SMTP passwords, etc.) go in .env, NOT here.
+
+[hut]
+provider = "lagazuoi"                     # must match a module in hutwatch.providers
+url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
+
+# One or more single-night stays to monitor independently (each its own
+# alert arm/disarm state). Every entry here checks ONE specific night only
+# (check_in date -> check_in date + nights), not a multi-night contiguous
+# booking, so you can scan a window of candidate dates and get alerted
+# per-date as soon as any of them opens up.
+[[targets]]
+label = "Solo - 31 Aug 2027"
+check_in = "2027-08-31"                   # ISO date; this single night only
+nights = 1
+beds_required = 1
+
+[[targets]]
+label = "Group of 2 - 1 Sep 2027"
+check_in = "2027-09-01"
+nights = 1
+beds_required = 2
+
+[[targets]]
+label = "Group of 2 - 2 Sep 2027"
+check_in = "2027-09-02"
+nights = 1
+beds_required = 2
+
+[[targets]]
+label = "Group of 2 - 3 Sep 2027"
+check_in = "2027-09-03"
+nights = 1
+beds_required = 2
+
+[fetch]
+# "httpx" for plain HTTP, "playwright" to render JS via headless Chromium.
+# lagazuoi's calendar is server-rendered HTML, so "httpx" is sufficient and used by default.
+engine = "httpx"
+timeout_seconds = 20
+contact_email = "internashyenal@gmail.com" # included in the User-Agent per robots.txt etiquette
+
+[polling]
+interval_minutes = 20
+jitter_minutes = 5
+min_interval_minutes = 10                 # hard floor, never poll faster than this
+backoff_initial_seconds = 30
+backoff_max_seconds = 3600
+backoff_multiplier = 2.0
+
+[alerts]
+max_consecutive_failures = 3              # send "monitor is broken" after this many failed checks in a row
+heartbeat_hour_utc = 6                    # send a daily heartbeat at this UTC hour
+
+[state]
+db_path = "hutwatch.sqlite3"
+
+[notifiers]
+# Enable one or more. Credentials/tokens come from .env.
+enabled = ["ntfy"]
+
+[notifiers.ntfy]
+topic_env = "NTFY_TOPIC"
+server = "https://ntfy.sh"
+
+[notifiers.smtp]
+host_env = "SMTP_HOST"
+port_env = "SMTP_PORT"
+username_env = "SMTP_USERNAME"
+password_env = "SMTP_PASSWORD"
+from_env = "SMTP_FROM"
+to_env = "SMTP_TO"
+use_tls = true

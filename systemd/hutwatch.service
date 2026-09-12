@@ -1,0 +1,21 @@
+[Unit]
+Description=hutwatch - Rifugio Lagazuoi availability monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hutwatch
+Group=hutwatch
+WorkingDirectory=/opt/hutwatch
+EnvironmentFile=/opt/hutwatch/.env
+ExecStart=/opt/hutwatch/.venv/bin/hutwatch --config /opt/hutwatch/config.toml
+Restart=on-failure
+RestartSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/hutwatch
+
+[Install]
+WantedBy=multi-user.target

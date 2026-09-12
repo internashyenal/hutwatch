@@ -1,0 +1,88 @@
+name: hutwatch check
+
+# Zero-infra alternative to running the poller continuously: runs a single
+# check on a schedule instead of a long-lived process. State (SQLite db) is
+# cached between runs so the alert-transition logic (no duplicate alerts)
+# still works across these ephemeral runs.
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: hutwatch-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.11.21"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Restore state database
+        uses: actions/cache/restore@v4
+        with:
+          path: hutwatch.sqlite3
+          key: hutwatch-state-${{ github.run_id }}
+          restore-keys: |
+            hutwatch-state-
+
+      - name: Run single check
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_TO: ${{ secrets.SMTP_TO }}
+        run: uv run hutwatch --once
+
+      - name: Render status page
+        if: always()
+        run: |
+          mkdir -p public
+          uv run hutwatch --render-status public/index.html
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Save state database
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: hutwatch.sqlite3
+          key: hutwatch-state-${{ github.run_id }}
+
+  deploy:
+    needs: check
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
