@@ -3,7 +3,7 @@ name: hutwatch check
 # Zero-infra alternative to running the poller continuously: runs a single
 # check on a schedule instead of a long-lived process. State (SQLite db) is
 # cached between runs so the alert-transition logic (no duplicate alerts)
-# still works across these ephemeral runs.
+# still works across these ephemeral runs.   
 
 on:
   schedule:
