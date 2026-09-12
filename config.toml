@@ -58,7 +58,7 @@ db_path = "hutwatch.sqlite3"
 
 [notifiers]
 # Enable one or more. Credentials/tokens come from .env.
-enabled = ["ntfy"]
+enabled = ["ntfy", "smtp"]
 
 [notifiers.ntfy]
 topic_env = "NTFY_TOPIC"
