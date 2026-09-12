@@ -10,11 +10,11 @@ available for your dates — so you can go book them yourself.
   page) for one or more configured single-night stays (each its own date and
   required bed count), and extracts the number of dormitory bunk beds
   available on each date.
-- Alerts you (via ntfy.sh) the moment any watched date transitions from
-  below its required bed count to at-or-above it. Each watched date is
-  tracked independently — it will not alert you again for the same
-  transition, and re-arms itself if availability later drops back below the
-  threshold.
+- Alerts you (via ntfy.sh push notification and email) the moment any
+  watched date transitions from below its required bed count to
+  at-or-above it. Each watched date is tracked independently — it will not
+  alert you again for the same transition, and re-arms itself if
+  availability later drops back below the threshold.
 - Sends a "monitor is broken" alert if the page structure changes and the
   parser can no longer make sense of it, or after several consecutive fetch
   failures (tracked per watched date). Sends a daily heartbeat so you know
@@ -184,9 +184,7 @@ type, booking link) — no secrets or raw HTML from the target site.
 
 ## Roadmap / TODO
 
-- **Email (SMTP) notifications**: `notifiers/smtp.py` and the
-  `[notifiers.smtp]` config section already exist, but SMTP is not yet
-  enabled or configured with real credentials — currently only `ntfy` is
-  active. To enable: add `"smtp"` to `notifiers.enabled` in `config.toml`
-  and fill in real `SMTP_*` values in `.env`.
+- **SMS notifications**: not yet implemented. Would need a new
+  `notifiers/sms.py` (e.g. via Twilio) plus a `[notifiers.sms]` config
+  section, following the same pattern as `notifiers/smtp.py`.
 

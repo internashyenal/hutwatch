@@ -39,7 +39,7 @@ beds_required = 2
 # lagazuoi's calendar is server-rendered HTML, so "httpx" is sufficient and used by default.
 engine = "httpx"
 timeout_seconds = 20
-contact_email = "internashyenal@gmail.com" # included in the User-Agent per robots.txt etiquette
+contact_email = "internashyenal+hutwatch@gmail.com" # included in the User-Agent per robots.txt etiquette
 
 [polling]
 interval_minutes = 20
