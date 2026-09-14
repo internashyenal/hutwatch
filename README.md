@@ -1,21 +1,26 @@
 # hutwatch
 
-Read-only availability monitor for Rifugio Lagazuoi. Polls the hut's booking
-calendar, and sends a phone notification the moment enough beds become
-available for your dates — so you can go book them yourself.
+Read-only availability monitor for mountain hut bookings. Polls each
+configured hut's booking calendar, and sends a phone notification the moment
+enough beds become available for your dates — so you can go book them
+yourself.
 
 ## What it does (and does not do)
 
-- Polls `disponibilita.php` (the calendar widget behind the public booking
-  page) for one or more configured single-night stays (each its own date and
-  required bed count), and extracts the number of dormitory bunk beds
-  available on each date.
+- Polls each configured hut's public booking calendar for one or more
+  configured single-night stays (each its own hut, date, and required bed
+  count), and extracts the number of beds available on each date.
+- Currently supports two huts/providers: Rifugio Lagazuoi (`providers/lagazuoi.py`)
+  and Rifugio Averau (`providers/averau.py`, via its Bukly booking engine).
+  Adding another hut means adding a new `hutwatch.providers.<name>` module and
+  one or more `[[targets]]` entries pointing at it — see those two modules
+  for the pattern to follow.
 - Alerts you (via ntfy.sh push notification and email) the moment any
   watched date transitions from below its required bed count to
   at-or-above it. Each watched date is tracked independently — it will not
   alert you again for the same transition, and re-arms itself if
   availability later drops back below the threshold.
-- Sends a "monitor is broken" alert if the page structure changes and the
+- Sends a "monitor is broken" alert if a hut's page structure changes and the
   parser can no longer make sense of it, or after several consecutive fetch
   failures (tracked per watched date). Sends a daily heartbeat so you know
   it's still running.
@@ -28,11 +33,17 @@ You are responsible for actually booking once notified.
 
 ### A note on "beds"
 
-The hut's calendar shows both private rooms (booked as a whole unit) and a
-dormitory (individually bookable bunk beds). `hutwatch` treats **dormitory
-bunk beds** as the "beds" metric, since that's what lets N unrelated people
-each grab a spot. Private room availability is *not* currently counted
-toward the threshold (see `providers/lagazuoi.py` for the parsing details).
+Each hut's calendar has its own notion of what's individually bookable.
+Rifugio Lagazuoi's calendar shows both private rooms (booked as a whole
+unit) and a dormitory (individually bookable bunk beds); `hutwatch` treats
+**dormitory bunk beds** as the "beds" metric there, since that's what lets N
+unrelated people each grab a spot (private room availability is *not*
+counted toward the threshold — see `providers/lagazuoi.py`). Rifugio
+Averau's Bukly calendar only exposes a per-room open/closed/restricted
+status with no explicit bed count, so `providers/averau.py` maps each room's
+label (e.g. "2 beds B&B", "Double room", "Single") to an approximate
+capacity and reports the largest currently-open room for the requested date
+— see that module's docstring for details.
 
 ## Requirements
 
@@ -187,4 +198,8 @@ type, booking link) — no secrets or raw HTML from the target site.
 - **SMS notifications**: not yet implemented. Would need a new
   `notifiers/sms.py` (e.g. via Twilio) plus a `[notifiers.sms]` config
   section, following the same pattern as `notifiers/smtp.py`.
+- **More huts**: add a new `hutwatch.providers.<name>` module implementing
+  `get_availability(fetcher, check_in, nights) -> Availability`, then add
+  `[[targets]]` entries in `config.toml` with that `provider` name and the
+  hut's own booking `url`.
 

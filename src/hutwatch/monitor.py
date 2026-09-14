@@ -35,19 +35,19 @@ def _notify_all(notifiers: list[Notifier], notification: Notification) -> None:
 
 def _availability_message(config: Config, target: TargetConfig, availability: Availability) -> Notification:
     checkout_date = _date.fromordinal(target.check_in.toordinal() + target.nights)
-    subject = f"[{target.label}] Bed available at {config.hut.provider}: {availability.beds} beds"
+    subject = f"[{target.label}] Bed available at {target.provider}: {availability.beds} beds"
     body = (
         f"{target.label}\n"
         f"{availability.beds} bed(s) available ({availability.room_type})\n"
         f"Check-in: {target.check_in.isoformat()}  Check-out: {checkout_date.isoformat()} "
         f"({target.nights} night(s))\n"
-        f"Book here: {config.hut.url}"
+        f"Book here: {target.url}"
     )
     return Notification(subject=subject, body=body)
 
 
 def _broken_message(config: Config, target: TargetConfig, reason: str, consecutive_failures: int) -> Notification:
-    subject = f"hutwatch monitor is broken ({config.hut.provider}: {target.label})"
+    subject = f"hutwatch monitor is broken ({target.provider}: {target.label})"
     body = (
         f"{consecutive_failures} consecutive checks have failed for '{target.label}'.\n"
         f"Last error: {reason}\n"
@@ -59,17 +59,21 @@ def _broken_message(config: Config, target: TargetConfig, reason: str, consecuti
 def run_once(
     config: Config,
     fetcher: Fetcher,
-    provider: Provider,
+    providers: dict[str, Provider],
     state: StateStore,
     notifiers: list[Notifier],
 ) -> list[Availability | None]:
     """Run a single check against every configured target.
 
+    `providers` maps each target's `provider` name to its loaded Provider
+    module, so different targets can independently monitor different huts.
+
     Returns a list of results (parsed Availability, or None on failure) in
     the same order as `config.targets`.
     """
     return [
-        _check_target(config, target, fetcher, provider, state, notifiers) for target in config.targets
+        _check_target(config, target, fetcher, providers[target.provider], state, notifiers)
+        for target in config.targets
     ]
 
 
@@ -150,13 +154,13 @@ def maybe_send_heartbeat(config: Config, state: StateStore, notifiers: list[Noti
     if state.last_heartbeat_date() == today:
         return
 
-    body_lines = ["hutwatch heartbeat: still running.", f"Provider: {config.hut.provider}"]
+    body_lines = ["hutwatch heartbeat: still running."]
     for target in config.targets:
         recent = state.recent_checks(limit=1, label=target.label)
         last = recent[0] if recent else None
         if last is not None:
             body_lines.append(
-                f"[{target.label}] last check at {last.timestamp}: "
+                f"[{target.label}] ({target.provider}) last check at {last.timestamp}: "
                 f"beds={last.beds} room_type={last.room_type} error={last.error}"
             )
         else:

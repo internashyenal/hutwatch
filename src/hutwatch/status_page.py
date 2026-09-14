@@ -89,6 +89,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
         summary_rows.append(
             "<tr>"
             f"<td>{html.escape(target.label)}</td>"
+            f'<td><a href="{html.escape(target.url)}">{html.escape(target.provider)}</a></td>'
             f"<td>{target.check_in.isoformat()} &rarr; {checkout.isoformat()}</td>"
             f"<td>{target.nights}</td>"
             f"<td>{target.beds_required}</td>"
@@ -100,7 +101,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
 
         history_sections.append(
             f"""<details>
-<summary>{html.escape(target.label)} &mdash; recent checks</summary>
+<summary>{html.escape(target.label)} ({html.escape(target.provider)}) &mdash; recent checks</summary>
 <table>
 <thead><tr><th>Timestamp (Melbourne)</th><th>Result</th><th>Room type</th><th>HTTP</th><th>Error</th></tr></thead>
 <tbody>
@@ -110,7 +111,7 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
 </details>"""
         )
 
-    summary_rows_html = "\n".join(summary_rows) if summary_rows else '<tr><td colspan="7">No targets configured.</td></tr>'
+    summary_rows_html = "\n".join(summary_rows) if summary_rows else '<tr><td colspan="8">No targets configured.</td></tr>'
     history_html = "\n".join(history_sections)
 
     return f"""<!doctype html>
@@ -119,18 +120,18 @@ def render_status_html(config: Config, state: StateStore, limit: int = 20) -> st
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="600">
-<title>hutwatch status: {html.escape(config.hut.provider)}</title>
+<title>hutwatch status</title>
 <style>{_STYLE}</style>
 </head>
 <body>
-<h1>{html.escape(config.hut.provider)} availability monitor</h1>
-<p><a class="book" href="{html.escape(config.hut.url)}">Booking page &rarr;</a></p>
+<h1>hutwatch availability monitor</h1>
 
 <h2>Watched dates</h2>
 <table>
 <thead>
 <tr>
   <th>Label</th>
+  <th>Hut</th>
   <th>Dates</th>
   <th>Nights</th>
   <th>Beds needed</th>

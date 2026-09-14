@@ -96,8 +96,11 @@ def main(argv: list[str] | None = None) -> int:
 
     user_agent = _build_user_agent(config.fetch.contact_email)
 
+    # Each target may point at a different hut/site, so check robots.txt once
+    # per distinct URL rather than once globally.
     try:
-        check_allowed(config.hut.url, user_agent)
+        for url in {target.url for target in config.targets}:
+            check_allowed(url, user_agent)
     except RobotsDisallowedError as exc:
         logging.getLogger(__name__).error("Refusing to run: %s", exc)
         return 1
@@ -108,15 +111,15 @@ def main(argv: list[str] | None = None) -> int:
         run_dry_run(config, notifiers)
         return 0
 
-    provider = load_provider(config.hut.provider)
+    providers = {name: load_provider(name) for name in {target.provider for target in config.targets}}
     fetcher = build_fetcher(config.fetch)
     state = StateStore(config.state.db_path)
 
     try:
         if args.once:
-            run_once(config, fetcher, provider, state, notifiers)
+            run_once(config, fetcher, providers, state, notifiers)
         else:
-            run_forever(config, fetcher, provider, state, notifiers)
+            run_forever(config, fetcher, providers, state, notifiers)
     finally:
         fetcher.close()
         state.close()

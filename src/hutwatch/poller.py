@@ -36,13 +36,17 @@ def _next_interval_seconds(config: Config, consecutive_failures: int) -> float:
 def run_forever(
     config: Config,
     fetcher: Fetcher,
-    provider: Provider,
+    providers: dict[str, Provider],
     state: StateStore,
     notifiers: list[Notifier],
 ) -> None:
-    logger.info("Starting hutwatch poll loop for provider=%s", config.hut.provider)
+    logger.info(
+        "Starting hutwatch poll loop for %d target(s) across provider(s): %s",
+        len(config.targets),
+        ", ".join(sorted(providers)),
+    )
     while True:
-        run_once(config, fetcher, provider, state, notifiers)
+        run_once(config, fetcher, providers, state, notifiers)
         maybe_send_heartbeat(config, state, notifiers)
 
         failures = max((state.get_consecutive_failures(t.label) for t in config.targets), default=0)

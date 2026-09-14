@@ -10,7 +10,6 @@ from hutwatch.config import (
     AlertsConfig,
     Config,
     FetchConfig,
-    HutConfig,
     NotifiersConfig,
     PollingConfig,
     StateConfig,
@@ -46,10 +45,11 @@ class FakeNotifier:
 
 def make_config(beds_required: int = 2, max_consecutive_failures: int = 3) -> Config:
     return Config(
-        hut=HutConfig(provider="fake", url="https://example.invalid/disponibilita.php"),
         targets=[
             TargetConfig(
                 label="test-target",
+                provider="fake",
+                url="https://example.invalid/disponibilita.php",
                 check_in=date(2027, 9, 1),
                 nights=1,
                 beds_required=beds_required,
@@ -84,7 +84,7 @@ def test_repeated_positive_checks_alert_exactly_once():
     )
 
     for _ in range(4):
-        run_once(config, fetcher=object(), provider=provider, state=state, notifiers=[notifier])
+        run_once(config, fetcher=object(), providers={"fake": provider}, state=state, notifiers=[notifier])
 
     assert len(notifier.sent) == 1
     assert "2" in notifier.sent[0].subject or "beds" in notifier.sent[0].subject
@@ -103,7 +103,7 @@ def test_broken_alert_fires_after_max_consecutive_failures():
     )
 
     for _ in range(3):
-        run_once(config, fetcher=object(), provider=provider, state=state, notifiers=[notifier])
+        run_once(config, fetcher=object(), providers={"fake": provider}, state=state, notifiers=[notifier])
 
     assert len(notifier.sent) == 1
     assert "broken" in notifier.sent[0].subject.lower()
@@ -123,7 +123,7 @@ def test_broken_alert_does_not_repeat_every_cycle_once_fired():
     )
 
     for _ in range(4):
-        run_once(config, fetcher=object(), provider=provider, state=state, notifiers=[notifier])
+        run_once(config, fetcher=object(), providers={"fake": provider}, state=state, notifiers=[notifier])
 
     assert len(notifier.sent) == 1
 
@@ -143,6 +143,6 @@ def test_recovery_then_new_failure_streak_alerts_again():
     )
 
     for _ in range(5):
-        run_once(config, fetcher=object(), provider=provider, state=state, notifiers=[notifier])
+        run_once(config, fetcher=object(), providers={"fake": provider}, state=state, notifiers=[notifier])
 
     assert len(notifier.sent) == 2

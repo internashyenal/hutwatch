@@ -11,14 +11,10 @@ from dotenv import load_dotenv
 
 
 @dataclass
-class HutConfig:
-    provider: str
-    url: str
-
-
-@dataclass
 class TargetConfig:
     label: str
+    provider: str
+    url: str
     check_in: date
     nights: int
     beds_required: int
@@ -78,7 +74,6 @@ class NotifiersConfig:
 
 @dataclass
 class Config:
-    hut: HutConfig
     targets: list[TargetConfig]
     fetch: FetchConfig
     polling: PollingConfig
@@ -104,13 +99,11 @@ def load_config(config_path: str | Path = "config.toml", env_path: str | Path | 
     with open(config_path, "rb") as f:
         raw = tomllib.load(f)
 
-    hut = HutConfig(
-        provider=raw["hut"]["provider"],
-        url=raw["hut"]["url"],
-    )
     targets = [
         TargetConfig(
             label=t["label"],
+            provider=t["provider"],
+            url=t["url"],
             check_in=date.fromisoformat(t["check_in"]),
             nights=int(t["nights"]),
             beds_required=int(t["beds_required"]),
@@ -157,7 +150,6 @@ def load_config(config_path: str | Path = "config.toml", env_path: str | Path | 
     notifiers = NotifiersConfig(enabled=enabled, ntfy=ntfy_cfg, smtp=smtp_cfg)
 
     return Config(
-        hut=hut,
         targets=targets,
         fetch=fetch,
         polling=polling,
