@@ -10,37 +10,40 @@
 # Each target names its own `provider` (must match a module in
 # hutwatch.providers) and `url` (the hut's public booking/availability page,
 # used for "book here" links) so different targets can watch different huts.
-[[targets]]
-label = "Lagazuoi Solo - 31 Aug 2027"
-provider = "lagazuoi"
-url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
-check_in = "2027-08-31"                   # ISO date; this single night only
-nights = 1
-beds_required = 1
+#
+# The Lagazuoi targets below are commented out: that booking is already
+# secured, so they no longer need to be polled. Uncomment to re-enable.
+# [[targets]]
+# label = "Lagazuoi Solo - 31 Aug 2027"
+# provider = "lagazuoi"
+# url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
+# check_in = "2027-08-31"                   # ISO date; this single night only
+# nights = 1
+# beds_required = 1
 
-[[targets]]
-label = "Lagazuoi Group of 2 - 1 Sep 2027"
-provider = "lagazuoi"
-url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
-check_in = "2027-09-01"
-nights = 1
-beds_required = 2
+# [[targets]]
+# label = "Lagazuoi Group of 2 - 1 Sep 2027"
+# provider = "lagazuoi"
+# url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
+# check_in = "2027-09-01"
+# nights = 1
+# beds_required = 2
 
-[[targets]]
-label = "Lagazuoi Group of 2 - 2 Sep 2027"
-provider = "lagazuoi"
-url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
-check_in = "2027-09-02"
-nights = 1
-beds_required = 2
+# [[targets]]
+# label = "Lagazuoi Group of 2 - 2 Sep 2027"
+# provider = "lagazuoi"
+# url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
+# check_in = "2027-09-02"
+# nights = 1
+# beds_required = 2
 
-[[targets]]
-label = "Lagazuoi Group of 2 - 3 Sep 2027"
-provider = "lagazuoi"
-url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
-check_in = "2027-09-03"
-nights = 1
-beds_required = 2
+# [[targets]]
+# label = "Lagazuoi Group of 2 - 3 Sep 2027"
+# provider = "lagazuoi"
+# url = "https://rifugiolagazuoi.com/EN/disponibilita.php"
+# check_in = "2027-09-03"
+# nights = 1
+# beds_required = 2
 
 [[targets]]
 label = "Averau Group of 2 - 1 Sep 2027"
